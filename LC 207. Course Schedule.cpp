@@ -1,40 +1,51 @@
 class Solution {
-public:
-    #define P pair<double, int>
-    double maxAverageRatio(vector<vector<int>>& classes, int extraStudents) {
-        int n = classes.size();
+public: 
+//topology sort length != n invalid condition
+    bool topsBfs(int n, unordered_map<int , list<int> >& adjList){
+        vector<int> ans;
+        queue<int> q;
+        unordered_map<int, int> indegree;
 
-        priority_queue<P> pq; //max-heap  -  //{max-delta, idx}
-
-        for(int i = 0; i < n; i++) {
-            double current_PR = (double)classes[i][0]/classes[i][1];
-            double new_PR = (double)(classes[i][0]+1)/(classes[i][1]+1);
-            double delta = new_PR - current_PR;
-            pq.push({delta, i});
-        }
-        
-        //O(extraStudents * log(n))
-        while(extraStudents--) { //O(k)
-            auto curr = pq.top(); //log(n)
-            pq.pop();
-
-            double delta = curr.first;
-            int idx = curr.second;
-
-            classes[idx][0]++; //incremeent total passing students in the class
-            classes[idx][1]++; //increment total students oin the class
-
-            double current_PR = (double)classes[idx][0]/classes[idx][1];
-            double new_PR = (double)(classes[idx][0]+1)/(classes[idx][1]+1);
-            delta = new_PR - current_PR;
-            pq.push({delta, idx}); //log(n)
+        //indegree calculation
+        for(auto i: adjList){
+            int src = i.first;
+            for(auto nbr: i.second){
+                indegree[nbr]++;
+            }
         }
 
-        double result = 0.0;
-        for(int i = 0; i < n; i++) {
-            result += (double)classes[i][0]/classes[i][1];
+        //put all nodes inside queue, which has indegree = 0
+        for(int i = 0; i<n;i++){
+            if(indegree[i] == 0){
+                q.push(i);
+            }
         }
 
-        return result/n;
+        //bfs logic
+        while(!q.empty()){
+            int fNode = q.front();
+            q.pop();
+            ans.push_back(fNode);
+            for(auto nbr: adjList[fNode]){
+                indegree[nbr]--;
+                if(indegree[nbr] == 0){
+                    q.push(nbr);
+                }
+            }
+        }
+
+      return ans.size() == n ? true : false;
+    }
+    bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+        unordered_map<int , list<int> > adjList;
+
+        for(auto task: prerequisites){
+            int u = task[0];
+            int v = task[1];
+            adjList[v].push_back(u);
+        }
+
+        bool ans = topsBfs(numCourses, adjList);
+        return ans;
     }
 };
