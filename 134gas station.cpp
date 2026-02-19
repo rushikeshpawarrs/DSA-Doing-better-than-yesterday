@@ -12,6 +12,7 @@ public:
         for(int i = 0; i < gas.size(); i++){
             balance += gas[i] - cost[i];
             if(balance < 0){
+                //carefull
                 deficit += balance;
                 start = i + 1;
                 balance = 0;
